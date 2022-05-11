@@ -1,0 +1,42 @@
+name: Semgrep Scan
+on: [push]
+jobs:
+  repo-scan:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://dockerhub2600/sec-tools:1.0.3
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@v3
+      - run: > 
+          semgrep 
+          --config=/home/sec-tool/semgrep-rules/ci 
+          --config=/home/sec-tool/semgrep-rules/secrets
+  
+  # setup Docker buld action
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Build Docker Image
+        run: docker build -t dockerhub2600/sec-tool:${{ github.sha }} .
+
+      - name: Allow trivy to scan local images
+        run: sudo chmod 666 /var/run/docker.sock
+  
+      - name: Container Scan with Trivy
+        uses: docker://dockerhub2600/sec-tools:1.0.3
+        with:
+          args: >
+            trivy --cache-dir /home/sec-tool/.cache/trivy/ 
+            image --format sarif -o trivy-results.sarif 
+            --severity CRITICAL 
+            --skip-update --offline-scan --no-progress 
+            dockerhub2600/sec-tool:${{ github.sha }}
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
