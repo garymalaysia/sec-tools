@@ -1,4 +1,4 @@
-## Motivation: Docker scan is not free
+## Motivation: `Docker scan` is not free
 
 # sec-tools
 Sec-Tools is a FREE docker container built with SAST and container scanning features.
