@@ -1,3 +1,5 @@
+![Docker Pull](https://img.shields.io/docker/pulls/dockerhub2600/sec-tools)
+
 ## Motivation: `Docker scan` is not free
 
 # sec-tools
